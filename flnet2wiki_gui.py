@@ -7,56 +7,20 @@ from tkMessageBox import *
 from tkFileDialog   import askopenfilename
 from tkFileDialog   import askdirectory
 from tkFileDialog   import asksaveasfilename
-from flNettoWiki import *
+from flNettoWiki import FLNettoWiki
+import os.path
 
 VERSION = '0.0.1'
 
-class net2wikiGUI(FLNettoWiki):
-    def __init__(self, RUN = True):
-        pass
-    
-    def OpenFile(self):
-        print ('Open File...')
-        
-    def SaveWiki(self):
-        print ('Convert to Wiki format...')
-        
-    def SaveWikiTable(self):
-        print ('Convert to Wiki Table format...')
-        
-
-    def appMain(self,run = True):
-        win = wikiWin(self)
-        
-        if (run):
-            win.root.mainloop()
-        else:
-            return win
-        """
-        text = self.readflNetfile(inputfile)
-        print("%s" % (text))
-        if (table):
-           wiki = self.convert_to_wiki_table(text)
-        else:
-           wiki = self.convert_to_wiki(text)
-        print("%s" % (wiki))
-        wentry = self.make_wiki_entry(wiki, whichnet)
-        print ("%s" % (wentry))
-        self.write_wiki_text_file(wentry, outputfile)
-        """
+class wikiExtentions(FLNettoWiki):
+    def __init__(self):
+        self.logData = None
+        self.fileName = None
 
 class wikiWin(Frame):
-    def __init__(self, callbacks):
-    
-        # parameters that you want to send through the Frame class. 
-#        Frame.__init__(self, master)   
-
-        #reference to the master widget, which is the tk window                 
-#        self.master = master
-
-        #with that, we want to then run init_window, which doesn't yet exist
-        self.init_window()
-
+    def __init__(self, RUN = True):
+        self.appMain(RUN)
+        
     #Creation of init_window
     def client_exit(self):
         print "Exiting..."
@@ -68,6 +32,52 @@ class wikiWin(Frame):
     def About(self):
         print ('About...')
         
+    def OpenFile(self):
+        print "Open FLLog File!"
+        fileName = askopenfilename(title = "Select FLNet Logfile:",
+                                      filetypes=[("LOG files","*.log"),
+                                                 ("CSV files","*.csv"),
+                                                 ("Text files","*.txt"),
+                                                 ("All Files","*.*")])
+        if os.path.isfile(fileName):
+            print('File name selected: %s'%(fileName))
+            self.wikistuff.fileName = fileName
+            self.wikistuff.logData = self.wikistuff.readflNetfile(fileName)
+            self.fillLogTextfromData(self.wikistuff.logData, \
+                                                    self.LogText)
+            #print(self.wikistuff.logData)
+    
+    def SaveWiki(self):
+        print ('Convert to Wiki format...')
+        temp = self.wikistuff.convert_to_wiki(self.wikistuff.logData)
+        wikiText = self.wikistuff.make_wiki_entry( \
+                        temp, whichnet = None)
+        self.fillLogTextfromData(wikiText, self.LogText, clearWin=True)
+
+    def SaveWikiTable(self):
+        print ('Convert to Wiki Table format...')
+        temp = self.wikistuff.convert_to_wiki(self.wikistuff.logData)
+        print('====>>>>temp = %s'%(temp))
+        wikiText = self.wikistuff.convert_to_wiki_table(temp)
+        self.fillLogTextfromData(wikiText, self.LogText, clearWin=False)
+
+    def fillLogTextfromData(self, Data, textWindow, clearWin = False):
+        if (clearWin):
+            textWindow.delete(1.0, END)
+        for line in Data:
+            textWindow.insert(END, line.strip()+'\n')
+
+    def fillLogTextfromFile(self, filename, textWindow, clearWin = False):
+        if (clearWin):
+            textWindow.delete(1.0, END)
+        try: 
+           with open(filename,'r') as f:
+              retText = f.readlines()
+           self.fillLogTextfromData(retText, textWindow, clearWin)
+        except IOError:
+           retText = ('Could not read file: '%(fName))
+        return retText
+  
     def init_window(self):
         self.root = Tk()
         self.S = Scrollbar(self.root)
@@ -82,28 +92,26 @@ class wikiWin(Frame):
         self.root.config(menu=menu)
         filemenu = Menu(menu)
         menu.add_cascade(label="File", menu=filemenu)
-        #filemenu.add_command(label="New", command=NewFile)
-        filemenu.add_command(label="Open...", command=callbacks.OpenFile)
+        filemenu.add_command(label="Open...", command=self.OpenFile)
         filemenu.add_separator()
-        filemenu.add_command(label="Convert to Wiki...", command=callbacks.SaveWiki)
-        filemenu.add_command(label="Convert to Wiki Table...", command=callbacks.SaveWikiTable)
+        filemenu.add_command(label="Convert to Wiki...", command=self.SaveWiki)
+        filemenu.add_command(label="Convert to Wiki Table...", command=self.SaveWikiTable)
         filemenu.add_command(label="Exit", command=self.root.quit)
 
         helpmenu = Menu(menu)
         menu.add_cascade(label="Help", menu=helpmenu)
         helpmenu.add_command(label="About...", command=self.About)
+        return self.root
 
-        #self.root.mainloop()
-        
-        
+    def appMain(self,run = True):
+        if (run):
+            self.wikistuff = wikiExtentions()
+            win = self.init_window()
+            print ('run = True')
+            win.mainloop()
+        else:
+            print ('run = False')
+
 if __name__ == '__main__':
-      #root = Tk()
-
-      #root.geometry("900x300")
-
       #creation of an instance
-      app = wikiWin()
-
-      #mainloop 
-      #root.mainloop()     
- 
+      win = wikiWin()

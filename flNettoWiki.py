@@ -1,6 +1,3 @@
-import datetime
-import argparse
-
 """
 FLNettoWiki
 Converts the .log file created by the program FLNet to
@@ -24,22 +21,35 @@ Update History:
 * Thu Jan 19 2017 Mike Heitmann, N0SO <n0so@arrl.net>
 - V1.0.1 - Initial release
 """
+import datetime
+import argparse
+
+TABLESTART = \
+"""
+{|class='wikitable' border='1'
+| align="left" style="background:#f0f0f0;"|'''CALL'''
+| align="left" style="background:#f0f0f0;"|'''NAME'''\n
+"""
+ROWEND = '|-'
+TABLEEND = "|}"
+
+
 class FLNettoWiki():
     def __init__(self, flnet_file_name = None, wikitext_name = None, whichnet = None, table = False):
         if (flnet_file_name != None):
             self.appMain(flnet_file_name, wikitext_name, whichnet, table)
 
     def __version__(self):
-        return "1.0.2"
+        return "1.0.3"
 
     def readflNetfile(self, flnet_file_name):
+        flnet_text = []
         if (flnet_file_name == None):
-            flnet_text = "";
             print("FLNettoWiki: No FLNet checkins file!")
         else:
-            text_file = open(flnet_file_name, "r")
-            flnet_text = text_file.read()
-            text_file.close()
+            with open(flnet_file_name, 'r') as file:
+               for nextline in file:
+                   flnet_text.append(nextline)
         return flnet_text
 
     def convert_to_wiki(self, flnet_text):
@@ -56,8 +66,8 @@ class FLNettoWiki():
         """
         wikitext = ""
         needControl = True
-        temp = flnet_text.splitlines(True)
-        for line in temp:
+        #temp = flnet_text.splitlines()
+        for line in flnet_text:
             linewords = line.split(" ")
             needCall = True
             for sword in linewords:
@@ -76,38 +86,31 @@ class FLNettoWiki():
 
     def convert_to_wiki_table(self, flnet_text):
         """
-        Parses the FLNet log file and converts each line to
-        WikiMedia numbered list source format:
-        
-        1. CALLSIGN - Name <net controller>
-        2. CALLSIGN - Name
-        3. CALLSIGN - Name
-        ...0
-        N. CALLSIGN - Name
         
         """
-        wikitext = """{|class='wikitable' border='1'
-| align="left" style="background:#f0f0f0;"|'''CALL'''
-| align="left" style="background:#f0f0f0;"|'''NAME'''\n"""
+        wikitext =[]
+        wikitext.append(TABLESTART + '\n')
+           
         needControl = True
-        temp = flnet_text.splitlines(True)
+        #print flnet_text
+        temp = self.convert_to_wiki(flnet_text)
         for line in temp:
-            wikitext += "|-\n"
+            wikitext.append(ROWEND + '\n')
             linewords = line.split(" ")
             needCall = True
             for sword in linewords:
                 if (needCall):
-                    wikitext += "|" + sword 
+                    appendText = '|' + sword 
                     needCall = False
                 else:
                     if (sword != ""):
-                        wikitext += "||" + sword
+                        appendText += "||" + sword
                         break
             if (needControl):
-                wikitext += " <Net Control>"
+                appendText += " <Net Control>"
                 needControl = False
-            wikitext+='\n'
-        wikitext += "|-\n"
+            wikitext.append(appendText)
+        wikitext.append(TABLEEND)
         return wikitext
             
     def make_wiki_entry(self, text, whichnet = None):
@@ -121,16 +124,20 @@ class FLNettoWiki():
 
         Call this method with data from the convert_to_wiki method
         """
+        entryText =[]
         now = datetime.datetime.now()
-        entryText = "===" + now.strftime("%B %d, %Y")
+        entryline = "===" + now.strftime("%B %d, %Y")
         if ((whichnet == None) or \
             (whichnet == "Sunday") ):
-            entryText += " [http://www.w0ma.org/net_information.htm Sunday Night 2-Meter Net]===\n\n"
+            entryline += " [http://www.w0ma.org/net_information.htm Sunday Night 2-Meter Net]===\n\n"
         elif (whichnet == "VEOC"):
-            entryText += " Monthly EOC VHF Equipment Check Net===\n\n"
+            entryline += " Monthly EOC VHF Equipment Check Net===\n\n"
         elif (whichnet == "UEOC"):
-            entryText += " Monthly EOC UHF Equipment Check Net===\n\n"
-        entryText += text
+            entryline += " Monthly EOC UHF Equipment Check Net===\n\n"
+        entryText.append(entryline)
+        linetext = text.split('\n')
+        for entryline in linetext:
+            entryText.append(entryline)
         return entryText
 
     def write_wiki_text_file(self, text, wikitext_name):
