@@ -13,6 +13,9 @@ theApp is the class that runs as main when this file is
 invoked stand alone.
 
 Update History:
+* Wed Sep 04 2019 Mike Heitmann, N0SO <n0so@arrl.net>
+- Update to V1.0.3
+- Updates for use with GUI for easier use.
 * Mon Jan 23 2017 Mike Heitmann, N0SO <n0so@arrl.net>
 - Updated to V1.0.2
 - Added -t. --table option - Makes a Wiki table 
