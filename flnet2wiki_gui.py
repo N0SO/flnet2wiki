@@ -1,4 +1,4 @@
-#!/user/bin/env python
+#!/usr/bin/env python
 try:
     from Tkinter import *
 except ImportError:
@@ -56,10 +56,11 @@ class wikiWin(Frame):
 
     def SaveWikiTable(self):
         print ('Convert to Wiki Table format...')
-        temp = self.wikistuff.convert_to_wiki(self.wikistuff.logData)
-        print('====>>>>temp = %s'%(temp))
-        wikiText = self.wikistuff.convert_to_wiki_table(temp)
-        self.fillLogTextfromData(wikiText, self.LogText, clearWin=False)
+        #temp = self.wikistuff.convert_to_wiki(self.wikistuff.logData)
+        #print('====>>>>temp = %s'%(temp))
+        wikiText = self.wikistuff.convert_to_wiki_table(self.wikistuff.logData)
+	print('wikiText ===>>>%s'%(wikiText))
+        self.fillLogTextfromData(wikiText, self.LogText, clearWin=True)
 
     def fillLogTextfromData(self, Data, textWindow, clearWin = False):
         if (clearWin):

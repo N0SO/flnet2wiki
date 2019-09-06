@@ -68,6 +68,7 @@ class FLNettoWiki():
         needControl = True
         #temp = flnet_text.splitlines()
         for line in flnet_text:
+	    print ('fl line = %s'%(line))
             linewords = line.split(" ")
             needCall = True
             for sword in linewords:
