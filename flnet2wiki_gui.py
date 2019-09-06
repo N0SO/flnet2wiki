@@ -45,7 +45,7 @@ class wikiWin(Frame):
             self.wikistuff.logData = self.wikistuff.readflNetfile(fileName)
             self.fillLogTextfromData(self.wikistuff.logData, \
                                                     self.LogText)
-            #print(self.wikistuff.logData)
+            print('Raw logDate: %s'%(self.wikistuff.logData))
     
     def SaveWiki(self):
         print ('Convert to Wiki format...')
@@ -56,10 +56,17 @@ class wikiWin(Frame):
 
     def SaveWikiTable(self):
         print ('Convert to Wiki Table format...')
-        #temp = self.wikistuff.convert_to_wiki(self.wikistuff.logData)
-        #print('====>>>>temp = %s'%(temp))
-        wikiText = self.wikistuff.convert_to_wiki_table(self.wikistuff.logData)
-	print('wikiText ===>>>%s'%(wikiText))
+        """
+        for line in self.wikistuff.logData:
+            print('line = %s'%(line))
+            temp = line.split()
+            print ('Raw temp = %s'%(temp))
+        """
+        temp = self.wikistuff.convert_to_wiki_table(self.wikistuff.logData)
+        print('===>WikiText:\n%s'%(temp))
+        wikiText = self.wikistuff.make_wiki_entry( \
+                                temp, whichnet = None)
+
         self.fillLogTextfromData(wikiText, self.LogText, clearWin=True)
 
     def fillLogTextfromData(self, Data, textWindow, clearWin = False):

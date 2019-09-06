@@ -27,8 +27,11 @@ import argparse
 TABLESTART = \
 """
 {|class='wikitable' border='1'
+| align="left" style="background:#f0f0f0;"|'''SEQ'''
 | align="left" style="background:#f0f0f0;"|'''CALL'''
-| align="left" style="background:#f0f0f0;"|'''NAME'''\n
+| align="left" style="background:#f0f0f0;"|'''NAME'''
+| align="left" style="background:#f0f0f0;"|'''NOTES'''
+|-
 """
 ROWEND = '|-'
 TABLEEND = "|}"
@@ -64,53 +67,56 @@ class FLNettoWiki():
         N. CALLSIGN - Name
         
         """
-        wikitext = ""
+        wikitext = []
         needControl = True
-        #temp = flnet_text.splitlines()
+
         for line in flnet_text:
-	    print ('fl line = %s'%(line))
-            linewords = line.split(" ")
-            needCall = True
-            for sword in linewords:
-                if (needCall):
-                    wikitext += "#" + sword 
-                    needCall = False
-                else:
-                    if (sword != ""):
-                        wikitext += " - " + sword
-                        break
+            #print ('fl line = %s'%(line))
+            linewords = line.split()
+            #print ('linewords = %s'%(linewords))
+            name = ''
+            comment = ''
+            call = linewords[0]
+            if (len(linewords) > 1):
+                name = linewords[1]
             if (needControl):
-                wikitext += " <Net Control>"
+                comment = '<net control>'
                 needControl = False
-            wikitext += "\n"
+            wikitext.append( \
+                ('# %s  %s  %s'%(call, name, comment)) )
+        #print ('wikitext = %s'%(wikitext))
         return wikitext
 
     def convert_to_wiki_table(self, flnet_text):
         """
         
         """
+
         wikitext =[]
         wikitext.append(TABLESTART + '\n')
-           
+        item = 0   
         needControl = True
-        #print flnet_text
-        temp = self.convert_to_wiki(flnet_text)
-        for line in temp:
-            wikitext.append(ROWEND + '\n')
-            linewords = line.split(" ")
-            needCall = True
-            for sword in linewords:
-                if (needCall):
-                    appendText = '|' + sword 
-                    needCall = False
-                else:
-                    if (sword != ""):
-                        appendText += "||" + sword
-                        break
+        for line in flnet_text:
+            item += 1
+            print('line = %s'%(line))
             if (needControl):
-                appendText += " <Net Control>"
+                comment = '<net control>'
                 needControl = False
-            wikitext.append(appendText)
+            else:
+                comment = ''
+            temp = line.split()
+            print ('Raw temp = %s\nLEN = %d'%(temp,len(temp)))
+            call = temp[0]
+            if (len(temp) > 1):
+                name = temp[1]
+            else:
+                name = ''
+            wikitext.append( ('|%d ||%s ||%s ||%s \n|-'%(\
+                                  item, \
+                                  call, \
+                                  name, \
+                                  comment)) )
+                                                        
         wikitext.append(TABLEEND)
         return wikitext
             
@@ -136,8 +142,8 @@ class FLNettoWiki():
         elif (whichnet == "UEOC"):
             entryline += " Monthly EOC UHF Equipment Check Net===\n\n"
         entryText.append(entryline)
-        linetext = text.split('\n')
-        for entryline in linetext:
+        #linetext = text.split('\n')
+        for entryline in text:
             entryText.append(entryline)
         return entryText
 
