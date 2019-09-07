@@ -45,7 +45,12 @@ class wikiWin(Frame):
             self.wikistuff.logData = self.wikistuff.readflNetfile(fileName)
             self.fillLogTextfromData(self.wikistuff.logData, \
                                                     self.LogText)
+	    self.filemenu.entryconfigure("Convert to Wiki...", \
+	                                   state="normal")
+	    self.filemenu.entryconfigure("Convert to Wiki Table...", \
+	                                   state="normal")
             print('Raw logDate: %s'%(self.wikistuff.logData))
+	    
     
     def SaveWiki(self):
         print ('Convert to Wiki format...')
@@ -98,14 +103,14 @@ class wikiWin(Frame):
         self.root.title("Wiki Conversion Utilities")
         menu = Menu(self.root)
         self.root.config(menu=menu)
-        filemenu = Menu(menu)
-        menu.add_cascade(label="File", menu=filemenu)
-        filemenu.add_command(label="Open...", command=self.OpenFile)
-        filemenu.add_separator()
-        filemenu.add_command(label="Convert to Wiki...", command=self.SaveWiki)
-        filemenu.add_command(label="Convert to Wiki Table...", command=self.SaveWikiTable)
-        filemenu.add_command(label="Exit", command=self.root.quit)
-
+        self.filemenu = Menu(menu)
+        menu.add_cascade(label="File", menu=self.filemenu)
+        self.filemenu.add_command(label="Open...", command=self.OpenFile)
+        self.filemenu.add_separator()
+        self.filemenu.add_command(label="Convert to Wiki...", command=self.SaveWiki, state="disabled")
+        self.filemenu.add_command(label="Convert to Wiki Table...", command=self.SaveWikiTable, state="disabled")
+        self.filemenu.add_command(label="Exit", command=self.root.quit)
+	
         helpmenu = Menu(menu)
         menu.add_cascade(label="Help", menu=helpmenu)
         helpmenu.add_command(label="About...", command=self.About)

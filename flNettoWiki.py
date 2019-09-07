@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 FLNettoWiki
 Converts the .log file created by the program FLNet to
@@ -93,7 +94,7 @@ class FLNettoWiki():
         """
 
         wikitext =[]
-        wikitext.append(TABLESTART + '\n')
+        wikitext.append(TABLESTART)
         item = 0   
         needControl = True
         for line in flnet_text:
@@ -149,7 +150,8 @@ class FLNettoWiki():
 
     def write_wiki_text_file(self, text, wikitext_name):
         with open(wikitext_name, 'w') as f:
-            f.write(text)
+	    for ltext in text:
+                f.write(ltext+'\n')
 
     def appMain(self, inputfile, outputfile, whichnet, table):
         text = self.readflNetfile(inputfile)
