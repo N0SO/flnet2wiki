@@ -23,7 +23,7 @@ class wikiWin(Frame):
         
     #Creation of init_window
     def client_exit(self):
-        print "Exiting..."
+        print ("Exiting...")
         exit()
 
     def helpmenu(self):
@@ -33,7 +33,7 @@ class wikiWin(Frame):
         print ('About...')
         
     def OpenFile(self):
-        print "Open FLLog File!"
+        print ("Open FLLog File!")
         fileName = askopenfilename(title = "Select FLNet Logfile:",
                                       filetypes=[("LOG files","*.log"),
                                                  ("CSV files","*.csv"),
@@ -43,13 +43,10 @@ class wikiWin(Frame):
             print('File name selected: %s'%(fileName))
             self.wikistuff.fileName = fileName
             self.wikistuff.logData = self.wikistuff.readflNetfile(fileName)
-            self.fillLogTextfromData(self.wikistuff.logData, \
-                                                    self.LogText)
-	    self.filemenu.entryconfigure("Convert to Wiki...", \
-	                                   state="normal")
-	    self.filemenu.entryconfigure("Convert to Wiki Table...", \
-	                                   state="normal")
-            print('Raw logDate: %s'%(self.wikistuff.logData))
+            self.fillLogTextfromData(self.wikistuff.logData, self.LogText)
+            self.filemenu.entryconfigure("Convert to Wiki...", state="normal")
+            self.filemenu.entryconfigure("Convert to Wiki Table...", state="normal")
+            #print('Raw logDate: %s'%(self.wikistuff.logData))
 	    
     
     def SaveWiki(self):
@@ -61,14 +58,8 @@ class wikiWin(Frame):
 
     def SaveWikiTable(self):
         print ('Convert to Wiki Table format...')
-        """
-        for line in self.wikistuff.logData:
-            print('line = %s'%(line))
-            temp = line.split()
-            print ('Raw temp = %s'%(temp))
-        """
         temp = self.wikistuff.convert_to_wiki_table(self.wikistuff.logData)
-        print('===>WikiText:\n%s'%(temp))
+        #print('===>WikiText:\n%s'%(temp))
         wikiText = self.wikistuff.make_wiki_entry( \
                                 temp, whichnet = None)
 
@@ -100,12 +91,12 @@ class wikiWin(Frame):
         self.S.config(command=self.LogText.yview)
         self.LogText.config(yscrollcommand=self.S.set)
 
-        self.root.title("Wiki Conversion Utilities")
+        self.root.title("FLNet to Wiki Conversion Utilities")
         menu = Menu(self.root)
         self.root.config(menu=menu)
         self.filemenu = Menu(menu)
         menu.add_cascade(label="File", menu=self.filemenu)
-        self.filemenu.add_command(label="Open...", command=self.OpenFile)
+        self.filemenu.add_command(label="Open FLNet File", command=self.OpenFile)
         self.filemenu.add_separator()
         self.filemenu.add_command(label="Convert to Wiki...", command=self.SaveWiki, state="disabled")
         self.filemenu.add_command(label="Convert to Wiki Table...", command=self.SaveWikiTable, state="disabled")

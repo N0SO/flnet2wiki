@@ -14,6 +14,7 @@ Update History:
 * Wed Sep 04 2019 Mike Heitmann, N0SO <n0so@arrl.net>
 - Update to V1.0.3
 - Updates for use with GUI for easier use.
+- Enhancements to table conversion utilities.
 * Mon Jan 23 2017 Mike Heitmann, N0SO <n0so@arrl.net>
 - Updated to V1.0.2
 - Added -t. --table option - Makes a Wiki table 
@@ -85,28 +86,28 @@ class FLNettoWiki():
                 needControl = False
             wikitext.append( \
                 ('# %s  %s  %s'%(call, name, comment)) )
-        #print ('wikitext = %s'%(wikitext))
         return wikitext
 
     def convert_to_wiki_table(self, flnet_text):
         """
-        
+        Convert data to Wiki table format.
+	Table headers and format are defined
+	in TABLESTART
         """
-
         wikitext =[]
         wikitext.append(TABLESTART)
         item = 0   
         needControl = True
         for line in flnet_text:
             item += 1
-            print('line = %s'%(line))
+            #print('line = %s'%(line))
             if (needControl):
                 comment = '<net control>'
                 needControl = False
             else:
                 comment = ''
             temp = line.split()
-            print ('Raw temp = %s\nLEN = %d'%(temp,len(temp)))
+            #print ('Raw temp = %s\nLEN = %d'%(temp,len(temp)))
             call = temp[0]
             if (len(temp) > 1):
                 name = temp[1]
@@ -143,7 +144,6 @@ class FLNettoWiki():
         elif (whichnet == "UEOC"):
             entryline += " Monthly EOC UHF Equipment Check Net===\n\n"
         entryText.append(entryline)
-        #linetext = text.split('\n')
         for entryline in text:
             entryText.append(entryline)
         return entryText
@@ -155,14 +155,14 @@ class FLNettoWiki():
 
     def appMain(self, inputfile, outputfile, whichnet, table):
         text = self.readflNetfile(inputfile)
-        print("%s" % (text))
+        #print("%s" % (text))
         if (table):
            wiki = self.convert_to_wiki_table(text)
         else:
            wiki = self.convert_to_wiki(text)
-        print("%s" % (wiki))
+        #print("%s" % (wiki))
         wentry = self.make_wiki_entry(wiki, whichnet)
-        print ("%s" % (wentry))
+        #print ("%s" % (wentry))
         self.write_wiki_text_file(wentry, outputfile)
 
        
