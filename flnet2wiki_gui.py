@@ -1,16 +1,22 @@
 #!/usr/bin/env python
-try:
+import sys
+python_version = sys.version_info[0]
+if (python_version == 2):
     from Tkinter import *
-except ImportError:
+    from tkMessageBox import *
+    from tkFileDialog   import askopenfilename
+    from tkFileDialog   import askdirectory
+    from tkFileDialog   import asksaveasfilename
+else:
     from tkinter import *
-from tkMessageBox import *
-from tkFileDialog   import askopenfilename
-from tkFileDialog   import askdirectory
-from tkFileDialog   import asksaveasfilename
+    from tkinter.messagebox import showinfo
+    from tkinter.filedialog import askopenfilename
+    from tkinter.filedialog import askdirectory
+    from tkinter.filedialog import asksaveasfilename
 from flNettoWiki import FLNettoWiki
 import os.path
 
-VERSION = '0.0.1'
+VERSION = '0.1.0'
 
 class wikiExtentions(FLNettoWiki):
     def __init__(self):
@@ -31,6 +37,12 @@ class wikiWin(Frame):
         
     def About(self):
         print ('About...')
+        pythonversion = sys.version.splitlines()
+        infotext = \
+        'FLNET2WIKI_GUI - Version ' + VERSION + '\n' + \
+        'Utilities to convert FLNET files to Wiki TABLE format.\n' \
+        + 'Python ' + pythonversion[0]
+        showinfo('FLNET2WIKI_GUI', infotext)
         
     def OpenFile(self):
         print ("Open FLLog File!")
@@ -47,7 +59,7 @@ class wikiWin(Frame):
             self.filemenu.entryconfigure("Convert to Wiki...", state="normal")
             self.filemenu.entryconfigure("Convert to Wiki Table...", state="normal")
             #print('Raw logDate: %s'%(self.wikistuff.logData))
-	    
+        
     
     def SaveWiki(self):
         print ('Convert to Wiki format...')
@@ -101,7 +113,7 @@ class wikiWin(Frame):
         self.filemenu.add_command(label="Convert to Wiki...", command=self.SaveWiki, state="disabled")
         self.filemenu.add_command(label="Convert to Wiki Table...", command=self.SaveWikiTable, state="disabled")
         self.filemenu.add_command(label="Exit", command=self.root.quit)
-	
+    
         helpmenu = Menu(menu)
         menu.add_cascade(label="Help", menu=helpmenu)
         helpmenu.add_command(label="About...", command=self.About)
