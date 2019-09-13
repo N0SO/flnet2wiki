@@ -32,6 +32,7 @@ TABLESTART = \
 | align="left" style="background:#f0f0f0;"|'''SEQ'''
 | align="left" style="background:#f0f0f0;"|'''CALL'''
 | align="left" style="background:#f0f0f0;"|'''NAME'''
+| align="left" style="background:#f0f0f0;"|'''TIME'''
 | align="left" style="background:#f0f0f0;"|'''NOTES'''
 |-
 """
@@ -56,6 +57,29 @@ class FLNettoWiki():
                for nextline in file:
                    flnet_text.append(nextline)
         return flnet_text
+        
+    def convert_to_wiki_line(self, linewords):
+        name = ''
+        time = ''
+        comment = ''
+        lwlen = len(linewords)
+        call = linewords[0]
+        if (lwlen > 1):
+            name = linewords[1]
+        if (lwlen >2):
+            time = linewords[2]
+        if (lwlen >3):
+            #print ('More...')
+            for i in range(3,(lwlen)):
+                #print('linewords[%d] =%s'%(i, linewords[i]))
+                comment += ' - ' + linewords[i]
+        retdict = {
+            'call': call,
+            'name': name,
+            'time': time,
+            'comment': comment
+        }
+        return retdict
 
     def convert_to_wiki(self, flnet_text):
         """
@@ -75,24 +99,24 @@ class FLNettoWiki():
         for line in flnet_text:
             #print ('fl line = %s'%(line))
             linewords = line.split()
-            #print ('linewords = %s'%(linewords))
-            name = ''
-            comment = ''
-            call = linewords[0]
-            if (len(linewords) > 1):
-                name = linewords[1]
+            linestuff = self.convert_to_wiki_line(linewords)
+            #print('linestuff = %s'%( linestuff ))
             if (needControl):
-                comment = '<net control>'
+                linestuff['comment'] += ' <net control>'
                 needControl = False
+
             wikitext.append( \
-                ('# %s  %s  %s'%(call, name, comment)) )
+                ('# %s  %s  %s %s'%(linestuff['call'], 
+                                 linestuff['name'], 
+                                 linestuff['time'],
+                                 linestuff['comment'])) )
         return wikitext
 
     def convert_to_wiki_table(self, flnet_text):
         """
         Convert data to Wiki table format.
-	Table headers and format are defined
-	in TABLESTART
+    Table headers and format are defined
+    in TABLESTART
         """
         wikitext =[]
         wikitext.append(TABLESTART)
@@ -100,24 +124,19 @@ class FLNettoWiki():
         needControl = True
         for line in flnet_text:
             item += 1
+            linewords = line.split()
             #print('line = %s'%(line))
+            linestuff = self.convert_to_wiki_line(linewords)
+            
             if (needControl):
-                comment = '<net control>'
+                linestuff['comment'] += ' <net control>'
                 needControl = False
-            else:
-                comment = ''
-            temp = line.split()
-            #print ('Raw temp = %s\nLEN = %d'%(temp,len(temp)))
-            call = temp[0]
-            if (len(temp) > 1):
-                name = temp[1]
-            else:
-                name = ''
-            wikitext.append( ('|%d ||%s ||%s ||%s \n|-'%(\
+            wikitext.append( ('|%d ||%s ||%s ||%s ||%s\n|-'%(\
                                   item, \
-                                  call, \
-                                  name, \
-                                  comment)) )
+                                  linestuff['call'], \
+                                  linestuff['name'], \
+                                  linestuff['time'], \
+                                  linestuff['comment'])) )
                                                         
         wikitext.append(TABLEEND)
         return wikitext
@@ -150,7 +169,7 @@ class FLNettoWiki():
 
     def write_wiki_text_file(self, text, wikitext_name):
         with open(wikitext_name, 'w') as f:
-	    for ltext in text:
+            for ltext in text:
                 f.write(ltext+'\n')
 
     def appMain(self, inputfile, outputfile, whichnet, table):
