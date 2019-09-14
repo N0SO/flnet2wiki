@@ -1,6 +1,4 @@
-import datetime
-import argparse
-
+#!/usr/bin/env python
 """
 FLNettoWiki
 Converts the .log file created by the program FLNet to
@@ -13,6 +11,10 @@ theApp is the class that runs as main when this file is
 invoked stand alone.
 
 Update History:
+* Wed Sep 04 2019 Mike Heitmann, N0SO <n0so@arrl.net>
+- Update to V1.0.3
+- Updates for use with GUI for easier use.
+- Enhancements to table conversion utilities.
 * Mon Jan 23 2017 Mike Heitmann, N0SO <n0so@arrl.net>
 - Updated to V1.0.2
 - Added -t. --table option - Makes a Wiki table 
@@ -21,23 +23,63 @@ Update History:
 * Thu Jan 19 2017 Mike Heitmann, N0SO <n0so@arrl.net>
 - V1.0.1 - Initial release
 """
+import datetime
+import argparse
+
+TABLESTART = \
+"""
+{|class='wikitable' border='1'
+| align="left" style="background:#f0f0f0;"|'''SEQ'''
+| align="left" style="background:#f0f0f0;"|'''CALL'''
+| align="left" style="background:#f0f0f0;"|'''NAME'''
+| align="left" style="background:#f0f0f0;"|'''TIME'''
+| align="left" style="background:#f0f0f0;"|'''NOTES'''
+|-
+"""
+ROWEND = '|-'
+TABLEEND = "|}"
+
+
 class FLNettoWiki():
     def __init__(self, flnet_file_name = None, wikitext_name = None, whichnet = None, table = False):
         if (flnet_file_name != None):
             self.appMain(flnet_file_name, wikitext_name, whichnet, table)
 
     def __version__(self):
-        return "1.0.2"
+        return "1.0.3"
 
     def readflNetfile(self, flnet_file_name):
+        flnet_text = []
         if (flnet_file_name == None):
-            flnet_text = "";
             print("FLNettoWiki: No FLNet checkins file!")
         else:
-            text_file = open(flnet_file_name, "r")
-            flnet_text = text_file.read()
-            text_file.close()
+            with open(flnet_file_name, 'r') as file:
+               for nextline in file:
+                   flnet_text.append(nextline)
         return flnet_text
+        
+    def convert_to_wiki_line(self, linewords):
+        name = ''
+        time = ''
+        comment = ''
+        lwlen = len(linewords)
+        call = linewords[0]
+        if (lwlen > 1):
+            name = linewords[1]
+        if (lwlen >2):
+            time = linewords[2]
+        if (lwlen >3):
+            #print ('More...')
+            for i in range(3,(lwlen)):
+                #print('linewords[%d] =%s'%(i, linewords[i]))
+                comment += ' - ' + linewords[i]
+        retdict = {
+            'call': call,
+            'name': name,
+            'time': time,
+            'comment': comment
+        }
+        return retdict
 
     def convert_to_wiki(self, flnet_text):
         """
@@ -51,60 +93,52 @@ class FLNettoWiki():
         N. CALLSIGN - Name
         
         """
-        wikitext = ""
+        wikitext = []
         needControl = True
-        temp = flnet_text.splitlines(True)
-        for line in temp:
-            linewords = line.split(" ")
-            needCall = True
-            for sword in linewords:
-                if (needCall):
-                    wikitext += "#" + sword 
-                    needCall = False
-                else:
-                    if (sword != ""):
-                        wikitext += " - " + sword
-                        break
+
+        for line in flnet_text:
+            #print ('fl line = %s'%(line))
+            linewords = line.split()
+            linestuff = self.convert_to_wiki_line(linewords)
+            #print('linestuff = %s'%( linestuff ))
             if (needControl):
-                wikitext += " <Net Control>"
+                linestuff['comment'] += ' <net control>'
                 needControl = False
-            wikitext += "\n"
+
+            wikitext.append( \
+                ('# %s  %s  %s %s'%(linestuff['call'], 
+                                 linestuff['name'], 
+                                 linestuff['time'],
+                                 linestuff['comment'])) )
         return wikitext
 
     def convert_to_wiki_table(self, flnet_text):
         """
-        Parses the FLNet log file and converts each line to
-        WikiMedia numbered list source format:
-        
-        1. CALLSIGN - Name <net controller>
-        2. CALLSIGN - Name
-        3. CALLSIGN - Name
-        ...0
-        N. CALLSIGN - Name
-        
+        Convert data to Wiki table format.
+    Table headers and format are defined
+    in TABLESTART
         """
-        wikitext = """{|class='wikitable' border='1'
-| align="left" style="background:#f0f0f0;"|'''CALL'''
-| align="left" style="background:#f0f0f0;"|'''NAME'''\n"""
+        wikitext =[]
+        wikitext.append(TABLESTART)
+        item = 0   
         needControl = True
-        temp = flnet_text.splitlines(True)
-        for line in temp:
-            wikitext += "|-\n"
-            linewords = line.split(" ")
-            needCall = True
-            for sword in linewords:
-                if (needCall):
-                    wikitext += "|" + sword 
-                    needCall = False
-                else:
-                    if (sword != ""):
-                        wikitext += "||" + sword
-                        break
+        for line in flnet_text:
+            item += 1
+            linewords = line.split()
+            #print('line = %s'%(line))
+            linestuff = self.convert_to_wiki_line(linewords)
+            
             if (needControl):
-                wikitext += " <Net Control>"
+                linestuff['comment'] += ' <net control>'
                 needControl = False
-            wikitext+='\n'
-        wikitext += "|-\n"
+            wikitext.append( ('|%d ||%s ||%s ||%s ||%s\n|-'%(\
+                                  item, \
+                                  linestuff['call'], \
+                                  linestuff['name'], \
+                                  linestuff['time'], \
+                                  linestuff['comment'])) )
+                                                        
+        wikitext.append(TABLEEND)
         return wikitext
             
     def make_wiki_entry(self, text, whichnet = None):
@@ -118,32 +152,36 @@ class FLNettoWiki():
 
         Call this method with data from the convert_to_wiki method
         """
+        entryText =[]
         now = datetime.datetime.now()
-        entryText = "===" + now.strftime("%B %d, %Y")
+        entryline = "===" + now.strftime("%B %d, %Y")
         if ((whichnet == None) or \
             (whichnet == "Sunday") ):
-            entryText += " [http://www.w0ma.org/net_information.htm Sunday Night 2-Meter Net]===\n\n"
+            entryline += " [http://www.w0ma.org/net_information.htm Sunday Night 2-Meter Net]===\n\n"
         elif (whichnet == "VEOC"):
-            entryText += " Monthly EOC VHF Equipment Check Net===\n\n"
+            entryline += " Monthly EOC VHF Equipment Check Net===\n\n"
         elif (whichnet == "UEOC"):
-            entryText += " Monthly EOC UHF Equipment Check Net===\n\n"
-        entryText += text
+            entryline += " Monthly EOC UHF Equipment Check Net===\n\n"
+        entryText.append(entryline)
+        for entryline in text:
+            entryText.append(entryline)
         return entryText
 
     def write_wiki_text_file(self, text, wikitext_name):
         with open(wikitext_name, 'w') as f:
-            f.write(text)
+            for ltext in text:
+                f.write(ltext+'\n')
 
     def appMain(self, inputfile, outputfile, whichnet, table):
         text = self.readflNetfile(inputfile)
-        print("%s" % (text))
+        #print("%s" % (text))
         if (table):
            wiki = self.convert_to_wiki_table(text)
         else:
            wiki = self.convert_to_wiki(text)
-        print("%s" % (wiki))
+        #print("%s" % (wiki))
         wentry = self.make_wiki_entry(wiki, whichnet)
-        print ("%s" % (wentry))
+        #print ("%s" % (wentry))
         self.write_wiki_text_file(wentry, outputfile)
 
        
