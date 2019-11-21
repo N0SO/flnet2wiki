@@ -1,30 +1,10 @@
 #!/usr/bin/env python
 """
 FLNettoWiki
-Converts the .log file created by the program FLNet to
-Wiki source code formated for use on the BEARS-STL Wiki
-Community Portal page.
 
 FLNettoWiki is the class containing the conversion methods
-
-theApp is the class that runs as main when this file is 
-invoked stand alone.
-
-Update History:
-* Wed Sep 04 2019 Mike Heitmann, N0SO <n0so@arrl.net>
-- Update to V1.0.3
-- Updates for use with GUI for easier use.
-- Enhancements to table conversion utilities.
-* Mon Jan 23 2017 Mike Heitmann, N0SO <n0so@arrl.net>
-- Updated to V1.0.2
-- Added -t. --table option - Makes a Wiki table 
-- instead of a list. Also changed version history
-- to this format.
-* Thu Jan 19 2017 Mike Heitmann, N0SO <n0so@arrl.net>
-- V1.0.1 - Initial release
 """
 import datetime
-import argparse
 
 TABLESTART = \
 """
@@ -41,9 +21,12 @@ TABLEEND = "|}"
 
 
 class FLNettoWiki():
-    def __init__(self, flnet_file_name = None, wikitext_name = None, whichnet = None, table = False):
+    def __init__(self, flnet_file_name = None, 
+                       wikitext_name = None, 
+                       whichnet = None, table = False):
         if (flnet_file_name != None):
-            self.appMain(flnet_file_name, wikitext_name, whichnet, table)
+            self.appMain(flnet_file_name, wikitext_name, 
+                                          whichnet, table)
 
     def __version__(self):
         return "1.0.3"
@@ -184,51 +167,11 @@ class FLNettoWiki():
         #print ("%s" % (wentry))
         self.write_wiki_text_file(wentry, outputfile)
 
-       
 """
-The main app class.
-Only gets called if this file is running stand alone, and
-not if it's included as part of a larger application
-"""
-class theApp():        
-    def __init__(self):
-        self.appMain()
-
-    def getVersion(self):
-        vapp = FLNettoWiki()
-        version = '%(prog) s ' + vapp.__version__()
-        return version        
-
-    def getArgs(self):
-        parser = argparse.ArgumentParser()
-        parser.add_argument('-v', '--version', action='version', version = self.getVersion())
-        parser.add_argument("-i", "--inputfile", default=None,
-            help="Specifies the FLNet input file name")
-        parser.add_argument("-o", "--outputfile", default=None,
-            help="Specifies the output file name for resulting Wiki page source code")
-        parser.add_argument("-t", "--table", default=None,
-            help="Format the output as  code for a Wiki Table")
-        parser.add_argument("-w", "--whichnet", default= "Sunday",
-            help='''
-                 Specifies the net type:
-                    Sunday = Sunday Night Two Meter Net,
-                    VEOC = Monthly EOC VHF Equipment Check Net,
-                    UEOC = Monthly EOC UHF Equipment Check Net
-                 ''')
-        args = parser.parse_args()
-        if ( (args.inputfile == None) or \
-             (args.outputfile == None) ):
-            parser.print_help()
-            #parser.print_usage() # for just the usage line
-            parser.exit()
-        return args
-
-    def appMain(self):
-        args = self.getArgs()
-        app = FLNettoWiki(args.inputfile, args.outputfile, args.whichnet, args.table)                   
-
-"""
-Main program - run stand-alone if not included as part of a larger application
+Main program - print module name and version 
 """
 if __name__ == '__main__':
-   app = theApp()
+   app = FLNettoWiki()
+   print ('Classname: %s Version: %s'%(app.__class__.__name__,
+                                       app.__version__()))
+   

@@ -1,0 +1,132 @@
+#!/usr/bin/env python
+"""
+fln2wiki
+Converts the .log file created by the program FLNet to
+Wiki source code formated for use on the BEARS-STL Wiki
+Community Portal page.
+
+fln2wiki is a 'front end' for the utilities in module
+flnet2wiki. 
+
+flnet2wiki is the module containing the classes conversion 
+that hold the methods used:
+    flnet2wiki.py - Class to manage wiki conversions
+    ui.py - class that manages the GUI
+
+Update History:
+* Tue Sep 24 2019 Mike Heitmann, N0SO <n0so@arrl.net>
+- Update to V1.1.0
+- Mostly cleanup -- added utilities and ui to new
+- module flnet2wiki
+- Added command line script fln2wiki that will execute
+- from the command line or launch the GUI.
+* Wed Sep 04 2019 Mike Heitmann, N0SO <n0so@arrl.net>
+- Update to V1.0.3
+- Updates for use with GUI for easier use.
+- Enhancements to table conversion utilities.
+* Mon Jan 23 2017 Mike Heitmann, N0SO <n0so@arrl.net>
+- Updated to V1.0.2
+- Added -t. --table option - Makes a Wiki table 
+- instead of a list. Also changed version history
+- to this format.
+* Thu Jan 19 2017 Mike Heitmann, N0SO <n0so@arrl.net>
+- V1.0.1 - Initial release
+"""
+import os, sys, argparse
+
+DEVMODPATH = ['flnet2wiki']
+
+DESCRIPTION = \
+"""
+fln2wiki - 
+Converts the .log file created by the program FLNet to
+Wiki source code formated for use on the BEARS-STL Wiki
+Community Portal page.
+"""
+
+EPILOG = \
+"""
+Running with no parameters will launch the GUI.
+"""
+
+# If the development module source paths exist, 
+# add them to the python path
+for mypath in DEVMODPATH:
+    if ( os.path.exists(mypath) and \
+                       (os.path.isfile(mypath) == False) ):
+        sys.path.insert(0,mypath)
+#print('Python path = %s'%(sys.path))
+
+"""
+The main app class.
+Runs as command line program if arguments are passed
+Runs the GUI version if no arguments passed.
+"""
+class theApp():        
+    def __init__(self):
+        self.appMain()
+
+    def __get_app_version__(self):
+        from __init__ import CLVERSION
+        versions = 'flnet2wikicl V'+CLVERSION+'\n'
+
+        from flnet2wiki import FLNettoWiki
+        TEMP = FLNettoWiki()
+        versions+='flnettowiki V'+TEMP.__version__()+'\n'
+        
+        from ui import wikiWin
+        TEMP = wikiWin(RUN=False)
+        versions+='ui V'+TEMP.__version__()+'\n'
+        
+        return versions
+
+    def getVersion(self):
+        vapp = FLNettoWiki()
+        version = '%(prog) s ' + vapp.__version__()
+        return version        
+
+    def getArgs(self):
+        parser = argparse.ArgumentParser(\
+                               description = DESCRIPTION,
+                                           epilog = EPILOG)
+        parser.add_argument('-v', '--version', action='version',
+                        version = self.__get_app_version__())
+        parser.add_argument("-i", "--inputfile", default=None,
+            help="Specifies the FLNet input file name")
+        parser.add_argument("-o", "--outputfile", default=None,
+            help="Specifies the output file name for resulting " \
+               + "Wiki page source code")
+        parser.add_argument("-t", "--table", default=None,
+            help="Format the output as  code for a Wiki Table")
+        parser.add_argument("-w", "--whichnet", default= "Sunday",
+            help='''
+                 Specifies the net type:
+                    Sunday = Sunday Night Two Meter Net,
+                    VEOC = Monthly EOC VHF Equipment Check Net,
+                    UEOC = Monthly EOC UHF Equipment Check Net
+                 ''')
+        args = parser.parse_args()
+        """
+        if ( (args.inputfile == None) or \
+             (args.outputfile == None) ):
+            parser.print_help()
+            #parser.print_usage() # for just the usage line
+            parser.exit()
+        """
+        return args
+
+    def appMain(self):
+        args = self.getArgs()
+        if (args.inputfile):
+            from flnet2wiki import FLNettoWiki
+            app = FLNettoWiki(args.inputfile, args.outputfile, 
+                                       args.whichnet, args.table)
+        else:
+            from ui import wikiWin
+            wikiWin(RUN=True)
+
+"""
+Main program - run stand-alone if not included as part of a larger application
+"""
+if __name__ == '__main__':
+   app = theApp()

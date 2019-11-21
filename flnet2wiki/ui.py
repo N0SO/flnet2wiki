@@ -13,7 +13,7 @@ else:
     from tkinter.filedialog import askopenfilename
     from tkinter.filedialog import askdirectory
     from tkinter.filedialog import asksaveasfilename
-from flNettoWiki import FLNettoWiki
+from flnet2wiki import FLNettoWiki
 import os.path
 
 VERSION = '1.0.0'
@@ -25,7 +25,11 @@ class wikiExtentions(FLNettoWiki):
 
 class wikiWin(Frame):
     def __init__(self, RUN = True):
+        self.VERSION = VERSION
         self.appMain(RUN)
+
+    def __version__(self):
+        return self.VERSION
         
     #Creation of init_window
     def client_exit(self):
@@ -162,5 +166,6 @@ class wikiWin(Frame):
             print ('run = False')
 
 if __name__ == '__main__':
-      #creation of an instance
-      win = wikiWin()
+   app = wikiWin(RUN=False)
+   print ('Classname: %s Version: %s'%(app.__class__.__name__,
+                                       app.__version__()))
